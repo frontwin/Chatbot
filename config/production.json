@@ -1,0 +1,4 @@
+{
+	"dbURL": "mongodb://wipro:wipro@ds143030.mlab.com:43030/chatbot",
+	"sessionSecret":"wipromajor"
+}

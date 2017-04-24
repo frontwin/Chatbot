@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{title}}</title>
+</head>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script type="text/javascript">
+	var socket = io();
+	
+	function chatnow(){
+
+		var to_server =$("#message1").val();
+		
+		$("#message1").val('');
+		console.log(to_server);
+
+		socket.emit("userquery",{"query": to_server,"user":{{user.profileID}} });
+	}
+
+	socket.on('reply',function(data){
+		console.log("reply recieved");
+		console.log(data.user[0].bill[0]["planID"]);
+		var str= "<p>" + data.user[0].bill[0]["totalBill"]+ "</p>";
+		$("#answer").prepend(str);
+	});
+
+	socket.on('billdetails',function(data){
+		console.log("bills recieved recieved");
+
+		//console.log(data.details);
+		
+		for (var i = 0; i < data.details.length; i++) {
+			
+			var str="";
+		str += "<p>" + data.details[i].call+ "</p>";	
+		str += "<p>" + data.details[i].total+ "</p>";	
+		str += "<p>" + data.details[i].internet+ "</p>";	
+		str += "<p>" + data.details[i].message+ "</p>";	
+		str += "<p>" +"************+"+ "</p>";	
+		
+		
+		console.log(data.details[i].call);
+		$("#answer").prepend(str);
+		}
+		// var str= "<p>" + data.user[0].bill[0]["totalBill"]+ "</p>";
+		// $("#answer").prepend(str);
+	
+	})
+</script>
+
+<body>
+
+<div class="resp">
+<h1> Welcome to Wipro Chat Bot {{user.fullname}} </h1>
+<h2>Your Profile id : {{user.profileID}}</h2>
+<p>{{user.gender}}</p>	
+
+
+<img src="{{user.profilePic}}" style="width: 150px; height: 150px">
+
+
+
+</div>
+<p id="answer"></p>
+<input type="text" name="message" id="message1">
+<button onclick="chatnow()">  Send  </button>
+
+</body>
+</html>

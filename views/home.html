@@ -1,0 +1,167 @@
+<html>
+<head>
+<title>{{title}}</title>
+	<link href="https://fonts.googleapis.com/css?family=Indie+Flower" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
+	<style type="text/css">
+	body{
+		background-size: cover;
+	}
+	@import url(http://weloveiconfonts.com/api/?family=entypo);
+	*, *:before, *:after {
+	  margin:0;
+	  padding:0;
+	  -webkit-box-sizing:border-box;
+	  -moz-box-sizing:border-box;
+	  box-sizing:border-box;
+	}
+	#lamp {
+	  position:relative;
+	  width:100vw;
+	  height:100vh;
+	  overflow:hidden;
+	}
+	input[name="switch"], input[name="switch"] + label {
+	  position:absolute;
+	  bottom:3rem;
+	  width:4rem;
+	  height:4rem;
+	}
+	input[name="switch"] + label {right:3rem;}
+	input[name="switch"] {
+	  opacity:0;
+	  z-index:9;
+	  cursor:pointer;
+	}
+	input[value="on"] {
+	  right:3rem;
+	}
+	input[value="off"] {
+	  right:-4rem;
+	}
+	input[name="switch"] + label {
+	  text-align:center;
+	}
+	[class*="entypo-"]:before {
+	  line-height:4rem;
+	  font-size:2.5rem;
+	  color:rgba(255,255,255,0.4);
+	  font-family:'entypo', sans-serif;
+	}
+	input[value="on"]:checked {
+	  right:-4rem;
+	}
+	input[value="on"]:checked + input[value="off"] {
+	  right:3rem;
+	}
+	.lamp {
+	  position:relative;
+	  margin:0 auto;
+	  width:.7rem;
+	  height:10rem;
+	  background-image:linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+	                   linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+	                   linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7));
+	  background-repeat:no-repeat;
+	  background-size:.15rem 8rem, .4rem .8rem, .7rem 2rem;
+	  background-position:50% 0, .19rem 8rem, 0 8.8rem;
+	}
+	.lamp:before, .lamp:after {
+	  content:'';
+	  position:absolute;
+	}
+	.lamp:before {
+	  left:-1.65rem;
+	  bottom:-4rem;
+	  width:4rem;
+	  height:4rem;
+	  border-radius:50%;
+	  background:rgba(255,255,255,0.03);
+	  box-shadow:inset 2px -2px 10px rgba(255,255,255,0.07);
+	  transition:all .15s;
+	}
+	.gonna-give-light, 
+	.gonna-give-light:before{
+	  position:absolute;
+	}
+	.gonna-give-light {
+	  top:10.05rem;
+	  left:.25rem;
+	  width:0;
+	  height:1.5rem;
+	  border-right:.2rem solid rgba(255,255,255,0.05);
+	}
+	.gonna-give-light:before {
+	  content:'';
+	  top:1.5rem;
+	  left:-.35rem;
+	  width:.9rem;
+	  height:.9rem;
+	  border-radius:50%;
+	  border:.2rem solid rgba(255,255,255,0.05);
+	  box-shadow:0px 0px 50px rgba(255,255,255,0);
+	}
+	input[value="on"]:checked ~ .lamp:before {
+	  background:rgba(255,255,255,1);
+	  box-shadow:0px 2px 10px rgba(255,255,255,0.8),
+	             0px 5px 50px rgba(255,255,255,0.8),
+	             0px 8px 80px rgba(255,255,255,0.6),
+	             0px 8px 120px rgba(255,255,255,0.6);
+	}
+	body {background:#2f323c;}
+	html, body {
+	  width:100%;
+	  height:100%;
+	}
+	.Description{
+		position:absolute;
+		left:30px;
+		top:20px;
+		height:100%;
+		z-index: 10;
+		text-align: left;
+
+	}
+
+}
+	</style>
+	<script type="text/javascript">
+		function check() {
+				document.getElementById("one").checked=true;
+				document.getElementById("two").checked=false;
+			}
+		function check2(){
+				document.getElementById("one").checked=false;
+				document.getElementById("two").checked=true;
+			}
+	</script>
+</head>
+<body>
+<div id="lamp">
+  <input id="one" type="radio" name="switch" value="on"/>
+  <input id="two" type="radio" name="switch" value="off" checked="checked"/>
+  <label for="switch" class="entypo-lamp"></label>
+  <div class="lamp" onmouseover=check() onmouseout=check2()>
+    <div class="gonna-give-light"></div>
+  </div>
+</div>
+<div class="Description">
+	<h1 style="font-family: 'Indie Flower', cursive; color:white; font-size:80px; border: 1px;">Chat Bot 101</h1>
+	<p style="font-family: 'Josefin Sans', sans-serif; color:#79c9c9">
+		Welcome to this sample of chat bot 101.
+		<br>Just start typing, asking anything from our bot related to billing systems and more.. 
+		<br>You can also do a normal chat with 101 and make him learn and get better with time.
+		<br><br><span style="color:white;font-size:40px;font-family:'Indie Flower', cursive">Random Text</span>
+		<br>I'm working with a CMS which I only have access to the CSS file. 
+		<br>So, I can't include anything thing in the HEAD of the document. 
+		<br>I was wondering if there was a way to import the web font from within the CSS file?
+	</p>
+<a href="/auth/callback"><img src="../images/fbLoginButton.png"></a>
+</div>
+<img src="../images/mobile.png" style="height:90%;position:absolute;top:25px;right:150px;"/>
+<input type="text" style="position:absolute;left:">
+<script type="text/javascript">
+	check();
+</script>
+</body>
+</html>

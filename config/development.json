@@ -1,0 +1,9 @@
+{
+	"dbURL": "mongodb://wipro:wipro@ds143030.mlab.com:43030/chatbot",
+	"sessionSecret":"wipromajor",
+	"fb":{
+		"appID": "1355614481167521",
+		"appSecret" : "89a35c9563ab3757d4b66c7dac2588ff",
+		"callbackURL": "http://localhost:3000/auth/facebook/callback"
+	}
+}
