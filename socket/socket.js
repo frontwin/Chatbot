@@ -1,4 +1,4 @@
-module.exports = function (io,mongoose,userModel,natural,pos,Nexmo,app,express) {
+module.exports = function (io,mongoose,userModel,natural,pos,Nexmo,app,express,nodemailer,Plan,Offer) {
 var clients=0;
 
 const nexmo = new Nexmo({
@@ -6,15 +6,33 @@ const nexmo = new Nexmo({
   apiSecret: 'd91c061d8dbc1b05'
 });
 
+
+
+var months=[
+{name:"Jan"},
+{name:"Feb"},
+{name:"March"},
+{name:"April"},
+{name:"May"},
+{name:"June"},
+{name:"July"},
+{name:"August"},
+{name:"September"},
+{name:"October"},
+{name:"November"},
+{name:"December"}
+];
+
+
 var router= express.Router();
 var number=919899472705;
-
 var ans=[];
 
 natural.PorterStemmer.attach();
 
 var classifier = new natural.BayesClassifier();
 var classifier2 = new natural.BayesClassifier();
+classifier.addDocument('show me Plans less than rupees 500','lessplan');
 classifier.addDocument('send me a message to my number,please message me now ','mess');
 
 classifier.addDocument('hello hi hiii wassup hey ello miss hey there! howdy namaste good morning good night good evening good afternoon goodmorning goodafternoon goodevening ','iGreet');
@@ -26,11 +44,14 @@ classifier.addDocument('bot dude, you are awesome cool. You are so much fun and 
 classifier.addDocument('you are not as good  bad as we thought. Quite okayish. not upto the mark.  i would even say bad and worst. disgusting you are stupid and worthless!','critics');
 
 classifier.addDocument('I would like to know about the weather today!','question1');
-classifier.addDocument('What is my bill for the last two months?','question1');
+classifier.addDocument('Please tell me my bill of last 2 months.What is my bill for the last two months?  I would like to know my balance details','question1');
 classifier.addDocument('How do you do this? How do you do that? What is the procedure to do this?','question1');
 
 classifier.addDocument('ok, thank you so much for your answer. you are awesome. Beautiful','regard1');
 classifier.addDocument('That was quite helpful. Thank you, you are a genius.','regard1');
+
+classifier.addDocument('What is my plan','plantell');
+classifier.addDocument('Mail me balance details','mailit');
 
 classifier.addDocument('good bye, good night, goodnight, see you later. Bye take care.','bye1');
 classifier.addDocument('Have a great day, Farewell. i am off. i\'m off. i am out. i\'m out. later. see ya. see you.','bye1');
@@ -54,27 +75,71 @@ function checkClass(inputStatement2,user_id,name,socket)
 	
 	if(query=='iGreet')
 	{		
-		var r_string='Hello ' +name +'.How may I help you?';
-		ans.push('iGreet');
-
+		var r_string='Hello ' +name +'.This is telecom Chatbot of ABC. How can I help you?';
 		socket.emit("reply",r_string);
 	}
+	
+
+	
 	//query =classifier.classify('my name is umang, and i need your help');
 	else if(query=='greet2')
 	{
-		var r_string='hello '+name+' . Nice to meet you. Any question you want to ask?';
-		ans.push('greet2');
+		var r_string='Hello ' +name +' Any question you want to ask?';
 		socket.emit("reply",r_string);
 	}
+	
+	else if(query=='lessplan')
+	{
+
+
+
+		for (var i in taggedWords) 
+			{
+			    var taggedWord = taggedWords[i];
+			    var word = taggedWord[0];
+			    var tag = taggedWord[1];
+			   console.log("taggedWord is " + taggedWord);
+
+			    if(tag=='CD' )
+			    {	         
+			    	
+			    	var num=word;
+					console.log("num is "+ num);
+
+					var plan_list=[];
+					console.log("inside plan");
+
+					Plan
+					.find({Price:{ $lt:num}},function(err,plans){
+						if(err){
+							console.log(err);
+							return;
+								}
+						plan_list=plans;
+
+						console.log(plan_list);
+
+						socket.emit("lessplan",plan_list);
+					});
+
+
+			    }
+			}
+
+
+
+	}
+	
+
 	//query=classifier.classify('what is the bill of last two months from my account');
 	else if(query=='question1')
 	{
 		var query2=classifier2.classify(inputStatement);	
-	//	console.log('nice question. Let me look it up for you..');
+		
+
 		if(query2=='bill1')
-		{ans.push('question1');
-			
-			var r_strin='nice question. Let me look it up for you..';
+		{  
+			var r_strin='Yes sure.';
 			socket.emit("reply",r_strin);
 	
 			for (var i in taggedWords) 
@@ -93,7 +158,7 @@ function checkClass(inputStatement2,user_id,name,socket)
 							
 						var bills  = [];
 
-							for (var i = user[0].bill.length - 1; i >= 0; i--) 
+							for (let i = user[0].bill.length - 1; i >= 0; i--) 
 							{
 								var bdate = (user[0].bill[i]["billingDate"]).getMonth();
 								var cdate = new Date().getMonth();
@@ -106,28 +171,13 @@ function checkClass(inputStatement2,user_id,name,socket)
 								bill_deatil.internet= user[0].bill[i].internetUsage;
 								bill_deatil.message =user[0].bill[i].totalMessages;
 								
-								// console.log(bill_deatil);
-								
-								// console.log(cdate);
-								// console.log(bdate);
-
+		
 								var c= parseInt(cdate);
 								var b= parseInt(bdate);
 								
 								var a=c-b;
-								// console.log(a);
-								// //console.log(parseInt(word));
-								// console.log("****************");
-
-								//console.log(a<parseInt(word));
-								// console.log(num);
-								// console.log(typeof(num));
 								var cmp=num.toString();
-								// console.log(typeof(cmp));
 								var ncmp =parseInt(cmp);
-
-								// console.log(typeof(ncmp));
-								// console.log("printing cmp" + cmp);
 
 								if( a < ncmp )
 								{	console.log("inside if cond");
@@ -141,17 +191,18 @@ function checkClass(inputStatement2,user_id,name,socket)
 
 								console.log("emitting bills");
 								console.log(bills);
-								socket.emit("billdetails",{"details" :bills});
-							// for(i=0;i<bills.length;i++)
-							// {
-							// 	console.log(bills[i]);
-							// }
-						
-						// console.log("in calbill" + user);
-							// return (a=user);
 
-						//socket.emit("reply",{"user" :user});
-			
+								console.log("billdetails fired");
+								socket.emit("billdetails",{"details" :bills});
+
+								Offer.find({},function(err,offer){
+									console.log(offer);
+									console.log("offering fired");
+									socket.emit("offering",{"offer":offer});
+					
+								});
+
+								
 						});
 		
 			    	console.log('Your bill for the last '+num+' months is as follows:');
@@ -159,24 +210,23 @@ function checkClass(inputStatement2,user_id,name,socket)
 			    }
 			}
 			if(flag==0)
-			{	var r_string='Just a minute sir';
-			socket.emit("reply",r_string);
-	
-
-			ans.push('question1');
-
-						var a;
+			{	
+			//	var r_string='Just a minute sir';
+			//	socket.emit("reply",r_string);
+		
+					var a;
 			    	var num=word;
 			    			var bills=[];
 
 						userModel.find({'profileID':user_id},function(err,user)
-						{	console.log("////////");
-								//console.log(user);
+						{	
+								var l=user[0].bill.length-1;
+
 								var bill_deatil={};
-								bill_deatil.total = user[0].bill[0].totalBill;
-								bill_deatil.call = user[0].bill[0].totalCall;
-								bill_deatil.internet= user[0].bill[0].internetUsage;
-								bill_deatil.message =user[0].bill[0].totalMessages;
+								bill_deatil.total = user[0].bill[l].totalBill;
+								bill_deatil.call = user[0].bill[l].totalCall;
+								bill_deatil.internet= user[0].bill[l].internetUsage;
+								bill_deatil.message =user[0].bill[l].totalMessages;
 								console.log(bill_deatil);
 								bills.push(bill_deatil);
 							
@@ -184,12 +234,12 @@ function checkClass(inputStatement2,user_id,name,socket)
 						});	
 						
 
-				console.log("Your bill of last month is:s");
 			}
 
 
 		}
-		///////very verry important
+		
+
 		else if(query2=='bill2')
 		{
 			var r_string = 'your data usage is ';
@@ -210,6 +260,9 @@ function checkClass(inputStatement2,user_id,name,socket)
 
 
 		}
+		
+
+
 		else if(query2=='calling'){
 			var r_string = 'Your call usage is ';
 			ans.push('calling');
@@ -229,6 +282,9 @@ function checkClass(inputStatement2,user_id,name,socket)
 		}
 		
 	}
+
+
+
 	else if(query=='regard1')
 	{
 		var r_string = 'Thank you sir' ;
@@ -236,48 +292,194 @@ function checkClass(inputStatement2,user_id,name,socket)
 		socket.emit("reply",r_string);
 	}
 
+
+	else if(query=='mailit')
+	{
+
+						var bills=[];
+
+						userModel.find({'profileID':user_id},function(err,user)
+						{		var l=user[0].bill.length-1;
+
+								var bill_deatil={};
+								bill_deatil.total = user[0].bill[l].totalBill;
+								bill_deatil.call = user[0].bill[l].totalCall;
+								bill_deatil.internet= user[0].bill[l].internetUsage;
+								bill_deatil.message =user[0].bill[l].totalMessages;
+								console.log("billdetial"+bill_deatil);
+								bills.push(bill_deatil);
+								
+
+								var r_string = 'check your mail please' ;
+		
+
+		   						var transporter = nodemailer.createTransport({
+        						service: 'Gmail',
+        							auth:{
+            							user: 'sharang.2795@gmail.com', // Your email id
+            							pass: 'Smackrock1995' // Your password
+        								}
+    							});
+
+		   						var bill_mail='<p><h3>Total Bill : Rs</h3>'+ bills[0].total+'</p>';
+		   							bill_mail+= '<p><h3>Total Calls made :</h3>' + bills[0].call +' minutes';
+		   							bill_mail+= '<p><h3>Total Internet used :</h3>' + bills[0].internet + ' Gb';
+		   							bill_mail+= '<p><h3>Total Messages sent :</h3>' + bills[0].message;
+    							var text='<html>'+
+											'<meta name="viewport" content="width=device-width, initial-scale=1">'+
+											'<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">'+
+											'<body><div class="w3-container"><h2>This is Telecom Chatbot of ABC Company</h2>'+
+ 											'<div class="w3-card-4" style="width:50%;"><header class="w3-container w3-blue">'+
+ 											'<h1>Bill Report</h1>'+
+    										'</header>'+
+											'<div class="w3-container">'+bill_mail+'</div>'+
+
+    										'<footer class="w3-container w3-blue">'+'<h5>Thank you for using our services.</h5>'+'</footer></div></div></body></html>';
+    
+    							var mailOptions = {
+    								from: 'sharang.2795@gmail.com', // sender address
+    								to: 'sharang.2795@gmail.com', // list of receivers
+    								subject: 'Bill Report : ABC', // Subject line
+    								//text: text //, // plaintext body
+    								html: text // You can choose to send an HTML body instead
+   												 };
+
+   								 transporter.sendMail(mailOptions, function(error, info){
+   									if(error){
+       									 console.log(error);
+  										  }
+  									else{
+       										 console.log('Message sent: ' + info.response);
+    									};
+									});
+
+								socket.emit("reply",r_string);
+
+									
+						});	
+						
+
+	}
+
 	else if(query=='mess')
 	{ 
-	console.log("in message class sending message");
-  
-			
-  		var toNumber = 919899472705;
-  		var message = " hello" + name; 
-
-  		
-  		nexmo.message.sendSms(
-    	number, toNumber, message, {type: 'unicode'},
-    		(err, responseData) => {
-    		
 		console.log("in message class sending message");
-      		if(err){
-    				console.log(err);
-    			}
+  
 
-    		if (responseData) {
-    		console.log(responseData);
+				// userModel.find({'profileID':user_id},function(err,user)
+				// 		{
+				// 				var l=user[0].bill.length-1;
 
-			var r_string="Message sent. Please check your phone with number 9899472705 " ;
-			socket.emit("reply",r_string);
+				// 				var bill_deatil={};
+				// 				bill_deatil.total = user[0].bill[l].totalBill;
+				// 				bill_deatil.call = user[0].bill[l].totalCall;
+				// 				bill_deatil.internet= user[0].bill[l].internetUsage;
+				// 				bill_deatil.message =user[0].bill[l].totalMessages;
+				// 				console.log(bill_deatil);
+				// 				var cmon=parseInt(new Date().getMonth());
+				// 				var toNumber = 919899472705;
 
-    		}
-    	});
+				// 		  		var message = " Hello " + name +'. Here is your bill of '+ months[cmon].name +'. Your total bill is ';
+  		// 						message+=bill_deatil.total + ' Rs. You have made calls of ' + bill_deatil.call+' minutes and sent ';
+  		// 						message+=bill_deatil.message+' messages. Internet used this month is '+bill_deatil.internet +' Gb.'. 
+  								
+  		// 						nexmo.message.sendSms(
+    // 								number, toNumber, message, {type: 'unicode'},
+    // 									(err, responseData) => {
+    		
+				// 						console.log("in message class sending message");
+    //   									if(err){
+    // 									console.log(err);
+    // 											}
+
+    // 									if (responseData) {
+    // 									console.log(responseData);
+
+				// 						var r_string="Message sent. Please check your phone with number 9899472705 " ;
+				// 						socket.emit("reply",r_string);
+
+    // 									}
+    									
+    // 									});
+				// 		});	
+
+			
+
+
+async.waterfall([
+    function (callback) {
+
+    		userModel.findOne({'profileID':user_id}).
+    		exec(function(err,user){
+    			callback(null,user);
+    		})
+    }
+], function (err, user) {
+
+
+	
+								var l=user[0].bill.length-1;
+
+								var bill_deatil={};
+								bill_deatil.total = user[0].bill[l].totalBill;
+								bill_deatil.call = user[0].bill[l].totalCall;
+								bill_deatil.internet= user[0].bill[l].internetUsage;
+								bill_deatil.message =user[0].bill[l].totalMessages;
+								console.log(bill_deatil);
+								var cmon=parseInt(new Date().getMonth());
+								var toNumber = 919899472705;
+
+						  		var message = " Hello " + name +'. Here is your bill of '+ months[cmon].name +'. Your total bill is ';
+  								message+=bill_deatil.total + ' Rs. You have made calls of ' + bill_deatil.call+' minutes and sent ';
+  								message+=bill_deatil.message+' messages. Internet used this month is '+bill_deatil.internet +' Gb.'. 
+  								
+  								nexmo.message.sendSms(
+    								number, toNumber, message, {type: 'unicode'},
+    									(err, responseData) => {
+    		
+										console.log("in message class sending message");
+      									if(err){
+    									console.log(err);
+    											}
+
+    									if (responseData) {
+    									console.log(responseData);
+
+										var r_string="Message sent. Please check your phone with number 9899472705 " ;
+										socket.emit("reply",r_string);
+
+    									}
+    									
+    									});
+	
+	});
+  		
+  		
+  		
 
 		
+	}
+	
+	else if (query =='plantell'){
+
+		userModel.findOne({'profileID':user_id})
+		.populate('bill.planID')
+		.exec(function(err,user){
+			var plan= user.bill[user.bill.length-1].planID;
+			socket.emit("plantell",plan);
+		});
+
 	}
 	else if(query=='bye1')
 	{
 		//console.log('Bye, have a nice day!');
 		var r_string = 'Bye, have a nice day. Nice talking to you :)';
-		ans.push('bye1');
 		socket.emit("reply",r_string);
 	}
 	else if(query=='appreciation')
 	{
 		//console.log('Thank You so much sir. You are very kind.');
 		var r_string = 'Thankyou i am always there to help you' + name+' :)';
-		
-		ans.push('appreciation');
 		socket.emit("reply",r_string);
 	}
 	else if(query=='critics')

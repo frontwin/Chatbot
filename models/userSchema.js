@@ -1,5 +1,5 @@
 var mongoose= require('mongoose');
-//var Plan = require('./plan.js');
+var Plan = require('./plan.js');
 var Schema = mongoose.Schema;
 
 var Call = require("./call.js");
@@ -27,12 +27,13 @@ var chatUser= new mongoose.Schema({
 					internetUsage: Number,
 
 			 }],
-		CallHostory:[{
+		CallHistory:[{
 			phone: Number,
-			Duration: Number,
-			stamp: { type: Date }
+			type: String,
+			seconds: Number,
+			//stamp: { type: Date ,default: Date.now}
 		}]
 	});
 
 module.exports = mongoose.model('User', chatUser); 
-//totalCall: Object,
+

@@ -19,6 +19,10 @@ a{
   color: rgba(82,179,217,0.9);
 }
 
+
+
+
+
 /* M E N U */
 
 .menu {
@@ -337,84 +341,72 @@ input.textarea {
 .emojis:active {
     opacity: 0.9;
 }
-table {
-    width:100%;
-}
-table, th, td {
-    border: 1px solid black;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 5px;
-    text-align: left;
-}
-table#t01 tr:nth-child(even) {
-    background-color: #eee;
-}
-table#t01 tr:nth-child(odd) {
-   background-color:#fff;
-}
-table#t01 th {
-    background-color: black;
-    color: white;
-}
-  </style>
-  <script src="/socket.io/socket.io.js"></script>
+</style>
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+
 <script type="text/javascript">
-    var socket = io();
-    
+var socket = io();
 
 
-    // setTimeout(function(){ 
-    //     var a= document.getElementsByClassName("last");
-    //     a.val(new Date());
-    //      }, 3000); 
+var months=[
+{name:"Jan"},
+{name:"Feb"},
+{name:"March"},
+{name:"April"},
+{name:"May"},
+{name:"June"},
+{name:"July"},
+{name:"August"},
+{name:"September"},
+{name:"October"},
+{name:"November"},
+{name:"December"}
+];
 
-    function chatnow(e)
+ 
+function chatnow(e)
+{
+
+
+    if (event.which == 13 || event.keyCode == 13) 
     {
-
-
-  if (event.which == 13 || event.keyCode == 13) {
         
-         var to_server =$("#message1").val();
-      var cdate= new Date();
-      var ch = cdate.getHours();
-      var cm= cdate.getMinutes();
+        var to_server =$("#message1").val();
+        var cdate= new Date();
+        var ch = cdate.getHours();
+        var cm= cdate.getMinutes();
 
-        //console.log(fname);
 
         $("#message1").val('');
-       // console.log(to_server);
        
-       var str='<li class="self"><div class="avatar"><img src='+'"{{user.profilePic}}"' +'draggable="false"/></div>'+
-      '<div class="msg">'+
+        var str='<li class="self"><div class="avatar"><img src='+'"{{user.profilePic}}"' +'draggable="false"/></div>'+
+        '<div class="msg">'+
         '<p><b>' + to_server +'<b></p><time>Sent at '+ch+':'+cm+'p.m.</time></div></li>';
 
-      //  console.log(str);
         $("#mychat").append(str);
 
         socket.emit("userquery",{"query": to_server,"user":{{user.profileID}},"name":"{{user.fullname}}" });
-        return false;
+        return false;   
     }
-    return true;
+        return true;
 
-       
-    }
+}
   
 
-     socket.on('broadcast',function(data){
+    socket.on('broadcast',function(data){
             $("#user").val='';
             $("#user").text(" " +" <<Total users online are >> " + data.description + " ");
         });
 
     socket.on('reply',function(data){
-         var cdate= new Date();
-      var ch = cdate.getHours();
-      var cm= cdate.getMinutes();
+        var cdate= new Date();
+        var ch = cdate.getHours();
+        var cm= cdate.getMinutes();
 
-         console.log("reply from server recieved");
-       var str="";
+        console.log("reply from server recieved");
+        var str="";
         str= '<li class="other"><div class="avatar"><img src="../images/bot1.png" draggable="false"/></div><div class="msg">';
         str+="<p>" +  data+"</p>";
         str+='<time>Sent at '+ch+':'+cm+' p.m.</time>';
@@ -423,10 +415,69 @@ table#t01 th {
         $("#mychat").append(str);
     });
 
-        socket.on('billdetails',function(data){
-             var cdate= new Date();
-      var ch = cdate.getHours();
-      var cm= cdate.getMinutes();
+    socket.on('lessplan',function(data){
+      console.log("inside lessplan");
+
+        var str="";
+        str+= '<li class="other"><div class="avatar"><img src="../images/bot1.png" draggable="false"/></div><div class="msg">';
+      
+
+        for(var i=0;i<data.length;i++){
+            console.log("inside for loop");
+                str+= "This is a <b>"+data[i].PlanType + "</b> plan of <b>"+data[i].Price+"</b> ruppees. It is valid for <b>"+ data[i].Validity + "</b> days.";
+                str+="You can make <b>"+data[i].Calls+"</b> minutes of calls and send <b>"+ data[i].Messages+"</b> messages.";
+                str+='<br>';
+
+        }
+           str+='</div></li>';
+
+        
+      
+        $("#mychat").append(str);
+    });
+
+
+    socket.on('offering',function(data){
+        console.log("offering recieved");
+
+        var i1= Math.floor(Math.random()*5);
+        var i2= Math.floor(Math.random()*5);
+        
+        console.log(i1);
+        console.log(i2);
+        //console.log(data.offer[i1]);
+        
+        var str="";
+        str+= '<li class="other"><div class="avatar"><img src="../images/bot1.png" draggable="false"/></div><div class="msg">';
+        str+="<b>"+data.offer[i1].Offertype + "</b> Offer. <b>"+data.offer[i1].Detail+'"</b>. Link to activate<b><a href="#">'+ data.offer[i1].Link + '</a></b>.';
+        str+='<br/>';
+        str+="<b>"+data.offer[i2].Offertype + "</b> Offer. <b>"+data.offer[i2].Detail+'"</b>. Link to activate<b><a href="#">'+ data.offer[i1].Link + '</a></b>.';
+        str+='</div></li>';  
+
+        $("#mychat").append(str);          
+
+    })
+
+
+
+    socket.on('plantell',function(data){
+
+        var str="";
+        str= '<li class="other"><div class="avatar"><img src="../images/bot1.png" draggable="false"/></div><div class="msg">';
+      
+        str+= "You are currently active on a <b>"+data.PlanType + "</b> plan of <b>"+data.Price+"</b> ruppees. It is valid for <b>"+ data.Validity + "</b> days.";
+        str+="You can make <b>"+data.Calls+"</b> minutes of calls and send <b>"+ data.Messages+"</b> messages.";
+        $("#mychat").append(str);
+    });
+
+        
+
+
+    socket.on('billdetails',function(data)
+    {
+        var cdate= new Date();
+        var ch = cdate.getHours();
+        var cm= cdate.getMinutes();
 
         console.log("bills recieved ");
 
@@ -434,30 +485,18 @@ table#t01 th {
          str= '<li class="other"><div class="avatar"><img src="../images/bot1.png" draggable="false"/></div><div class="msg">';
         
         str+='<b>Your Bills are:</b>';
-        str+='<table style="width:100%;border: 1px solid black;"><tr><th>Total Bill</th><th>Call</th> <th>Internet used</th> <th>Messages Sent</th></tr>';
-        console.log(data.details.length);
-        for (var i = 0; i < data.details.length; i++) {
-            
-        // str += "<p>* Total Bill: <b>" + data.details[i].total+ "</b>  <pre> Call: <pre> <b> "+ data.details[i].call+"</b>" + "Internet used: <b>"+ data.details[i].internet+ "</b>" +"Messages Sent:<b> "+ data.details[i].message+"</b>"+ "</p>";
+        for (var i = 0; i < data.details.length; i++) 
+        {
         
-        str+='<tr>';
-        str+='<td>'+data.details[i].total+'</td>';
-        str+='<td>'+data.details[i].call+'</td>';
-        str+='<td>'+data.details[i].internet+" gb"+'</td>';
-        str+='<td>'+data.details[i].message+'</td>';
-        str+='</tr>';
-
-
-    //     console.log(data.details[i].call);
-    //     //$("#answer").append(str);
+            str+='<h4>Your bill of' + months[i].name+ ' is: </h4>'+
+                    '<pre> Your toal bill is Rs'+ data.details[i].total+'</pre>'+
+                    '<pre> You made calls of '+ data.details[i].call+' seconds and '+data.details[i].message +' messages were sent. Your internet'+
+                    ' consumption was '+ data.details[i].internet + ' gb</pre>';
         }
 
-        str+='</table>';
-        str+='<time>Sent at '+ch+':'+cm+' p.m.</time></div></li>';
-        str+='</div></li>';
         $("#mychat").append(str);
     
-    })
+    });
 
 </script>
 </head>
@@ -467,33 +506,11 @@ table#t01 th {
             <div class="name" ><b> Welcome to Wipro Chat Bot - {{user.fullname}}</b> <button type="button" class="btn btn-primary"><a href="/logout">Logout</a></button></div>
            
             <div class="last"></div>
-        </div>
+</div>
     
-    <ol class="chat" id="mychat">
-    
-  <!--   <li class="other">
-        <div class="avatar"><img src="http://i.imgur.com/DY6gND0.png" draggable="false"/></div>
-      <div class="msg">
-        <p>Hola!</p>
-        <p>Te vienes a cenar al centro? <emoji class="pizza"/></p>
-        <time>20:17</time>
-      </div>
-    </li>
- -->
-<!--     <li class="other">
-        <div class="avatar"><img src="../images/bot1.png" draggable="false"/></div>
-      <div class="msg">
-        <p>Puff...</p>
-        <p>Aún estoy haciendo el contexto de Góngora... <emoji class="books"/></p>
-        <p>Mejor otro día</p>
-        <time>20:18</time>
-      </div>
-    </li> -->
-
-    </ol>
-    <input class="textarea" type="text" placeholder="Type here!" id="message1" onkeypress="return chatnow(event)"/>
-   <!--  <div class="emojis"><button onclick="chatnow()">  Send  </button></div>
- -->
-
-  </body>
-  </html>
+<ol class="chat" id="mychat">
+</ol>
+<input class="textarea" type="text" placeholder="Type here!" id="message1" onkeypress="return chatnow(event)"/>
+   
+</body>
+</html>

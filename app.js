@@ -8,6 +8,8 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var passport = require('passport');
 const Nexmo = require('nexmo');
+var nodemailer = require('nodemailer');
+var async = require('async');
 
 const nexmo = new Nexmo({
   apiKey: '4e65dbd7',
@@ -41,9 +43,9 @@ app.use(bodyParser.json());
 var User = require('./models/userSchema.js');
 var Plan = require('./models/plan.js');
 var Call = require('./models/call.js');
+var Offer = require('./models/offers.js');
 
 var ConnectMongo = require('connect-Mongo')(session);
-	//console.log("saved");
 
 app.set('views',path.join(__dirname,'views'));
 app.engine('html',require('hogan-express'));
@@ -78,7 +80,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 require('./auth/passportAuth.js')(passport,FacebookStrategy,config,User);
-require('./routes/routes.js')(app,express,passport,Plan,User,Call);
+require('./routes/routes.js')(app,express,passport,Plan,User,Call,Offer);
 
 
 app.set('port',process.env.PORT || 3000);
@@ -86,7 +88,7 @@ app.set('port',process.env.PORT || 3000);
 var server = require('http').createServer(app);
 var io= require('socket.io').listen(server);
 
-require('./socket/socket.js')(io,mongoose,User,natural,pos,Nexmo,app,express);
+require('./socket/socket.js')(io,mongoose,User,natural,pos,Nexmo,app,express,nodemailer,Plan,Offer);
 
 server.listen(app.get('port'),function(){
 	console.log('Mode is : ' + env);
